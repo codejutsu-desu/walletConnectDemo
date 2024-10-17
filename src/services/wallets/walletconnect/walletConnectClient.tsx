@@ -31,7 +31,7 @@ import EventEmitter from "events";
 const refreshEvent = new EventEmitter();
 
 // Create a new project in walletconnect cloud to generate a project id
-const walletConnectProjectId = "377d75bb6f86a2ffd427d032ff6ea7d3";
+const walletConnectProjectId = "53db41bfb52ee26d9a304025f741ee18";
 const currentNetworkConfig = appConfig.networks.mainnet;
 const hederaNetwork = currentNetworkConfig.network;
 const hederaClient = Client.forName(hederaNetwork);
@@ -39,8 +39,8 @@ const hederaClient = Client.forName(hederaNetwork);
 // Adapted from walletconnect dapp example:
 // https://github.com/hashgraph/hedera-wallet-connect/blob/main/src/examples/typescript/dapp/main.ts#L87C1-L101C4
 const metadata: SignClientTypes.Metadata = {
-  name: "Hedera CRA Template",
-  description: "Hedera CRA Template",
+  name: "connectWallet Hedera",
+  description: "connectWallet Hedera",
   url: window.location.origin,
   icons: [window.location.origin + "/logo192.png"],
 };
