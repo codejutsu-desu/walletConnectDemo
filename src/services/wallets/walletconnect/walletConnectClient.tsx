@@ -5,11 +5,10 @@ import {
   AccountId,
   ContractExecuteTransaction,
   ContractId,
-  LedgerId,
   TokenAssociateTransaction,
+  LedgerId,
   TokenId,
   Transaction,
-  TransactionId,
   TransferTransaction,
   Client,
 } from "@hashgraph/sdk";
@@ -21,13 +20,10 @@ import {
   HederaJsonRpcMethod,
   HederaSessionEvent,
   HederaChainId,
-  SignAndExecuteTransactionParams,
-  transactionToBase64String,
 } from "@hashgraph/hedera-wallet-connect";
 import EventEmitter from "events";
 
 // Created refreshEvent because `dappConnector.walletConnectClient.on(eventName, syncWithWalletConnectContext)` would not call syncWithWalletConnectContext
-// Reference usage from walletconnect implementation https://github.com/hashgraph/hedera-wallet-connect/blob/main/src/lib/dapp/index.ts#L120C1-L124C9
 const refreshEvent = new EventEmitter();
 
 // Create a new project in walletconnect cloud to generate a project id
@@ -64,24 +60,26 @@ const initializeWalletConnect = async () => {
 
 export const openWalletConnectModal = async () => {
   await initializeWalletConnect();
-  await dappConnector.openModal().then((x) => {
+  await dappConnector.openModal().then(() => {
     refreshEvent.emit("sync");
   });
 };
 
 class WalletConnectWallet implements WalletInterface {
-  private getSigner() {
+  public getSigner() {
     if (dappConnector.signers.length === 0) {
       throw new Error("No signers found!");
     }
     return dappConnector.signers[0];
   }
 
-  private getAccountId() {
-    // Need to convert from walletconnect's AccountId to hashgraph/sdk's AccountId because walletconnect's AccountId and hashgraph/sdk's AccountId are not the same!
+  // Change this from private to public
+  public getAccountId() {
+    // Convert from walletconnect's AccountId to hashgraph/sdk's AccountId
     return AccountId.fromString(this.getSigner().getAccountId().toString());
   }
 
+  // Other methods remain unchanged
   async transferHBAR(toAddress: AccountId, amount: number) {
     const transferHBARTransaction = new TransferTransaction()
       .addHbarTransfer(this.getAccountId(), -amount)
@@ -137,8 +135,6 @@ class WalletConnectWallet implements WalletInterface {
     return txResult ? txResult.transactionId : null;
   }
 
-  // Purpose: build contract execute transaction and send to wallet for signing and execution
-  // Returns: Promise<TransactionId | null>
   async executeContractFunction(
     contractId: ContractId,
     functionName: string,
@@ -154,24 +150,38 @@ class WalletConnectWallet implements WalletInterface {
     await tx.freezeWithSigner(signer);
     const txResult = await tx.executeWithSigner(signer);
 
-    // in order to read the contract call results, you will need to query the contract call's results form a mirror node using the transaction id
-    // after getting the contract call results, use ethers and abi.decode to decode the call_result
     return txResult ? txResult.transactionId : null;
   }
+
+  async processTransactionBytes(transactionBytes: Uint8Array) {
+    try {
+      const transaction = Transaction.fromBytes(transactionBytes);
+      console.log(transaction);
+      const signer = this.getSigner();
+      console.log(signer);
+      await transaction.freezeWithSigner(signer);
+      const txResult = await transaction.executeWithSigner(signer);
+      console.log(txResult);
+      return txResult ? txResult.transactionId : null;
+    } catch (err) {
+      console.error("Error processing transaction bytes:", err);
+      throw err;
+    }
+  }
+
   disconnect() {
     dappConnector.disconnectAll().then(() => {
       refreshEvent.emit("sync");
     });
   }
 }
+
 export const walletConnectWallet = new WalletConnectWallet();
 
 // this component will sync the walletconnect state with the context
 export const WalletConnectClient = () => {
-  // use the HashpackContext to keep track of the hashpack account and connection
   const { setAccountId, setIsConnected } = useContext(WalletConnectContext);
 
-  // sync the walletconnect state with the context
   const syncWithWalletConnectContext = useCallback(() => {
     const accountId = dappConnector.signers[0]?.getAccountId()?.toString();
     if (accountId) {
@@ -184,7 +194,6 @@ export const WalletConnectClient = () => {
   }, [setAccountId, setIsConnected]);
 
   useEffect(() => {
-    // Sync after walletconnect finishes initializing
     refreshEvent.addListener("sync", syncWithWalletConnectContext);
 
     initializeWalletConnect().then(() => {
@@ -195,5 +204,6 @@ export const WalletConnectClient = () => {
       refreshEvent.removeListener("sync", syncWithWalletConnectContext);
     };
   }, [syncWithWalletConnectContext]);
+
   return null;
 };

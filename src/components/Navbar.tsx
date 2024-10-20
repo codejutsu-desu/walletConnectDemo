@@ -9,7 +9,7 @@ export default function NavBar() {
   const { accountId, walletInterface } = useWalletInterface();
 
   const handleConnect = async () => {
-    if (accountId) {
+    if (accountId && walletInterface) {
       walletInterface.disconnect();
     } else {
       setOpen(true);

@@ -1,7 +1,5 @@
 import { Button, Dialog, Stack } from "@mui/material";
-import { connectToMetamask } from "../services/wallets/metamask/metamaskClient";
 import { openWalletConnectModal } from "../services/wallets/walletconnect/walletConnectClient";
-import MetamaskLogo from "../assets/metamask-logo.svg";
 import WalletConnectLogo from "../assets/walletconnect-logo.svg";
 
 interface WalletSelectionDialogProps {
@@ -33,22 +31,6 @@ export const WalletSelectionDialog = (props: WalletSelectionDialogProps) => {
           />
           WalletConnect
         </Button>
-        {/* <Button
-          variant="contained"
-          onClick={() => {
-            connectToMetamask();
-          }}
-        >
-          <img
-            src={MetamaskLogo}
-            alt="metamask logo"
-            className="walletLogoImage"
-            style={{
-              padding: "4px 4px 4px 0px",
-            }}
-          />
-          Metamask
-        </Button> */}
       </Stack>
     </Dialog>
   );
