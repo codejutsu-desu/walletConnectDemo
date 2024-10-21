@@ -156,12 +156,24 @@ class WalletConnectWallet implements WalletInterface {
   async processTransactionBytes(transactionBytes: Uint8Array) {
     try {
       const transaction = Transaction.fromBytes(transactionBytes);
-      console.log(transaction);
-      const signer = this.getSigner();
-      console.log(signer);
-      await transaction.freezeWithSigner(signer);
+
+      // Retrieve the signer
+      const signer = this.getSigner(); // Ensure signer is defined in scope
+
+      // Check if the transaction is already frozen before freezing
+      if (!transaction.isFrozen()) {
+        console.log(signer);
+
+        // Freeze the transaction only if it's not already frozen
+        await transaction.freezeWithSigner(signer);
+      } else {
+        console.log("Transaction is already frozen.");
+      }
+
+      // Execute the transaction
       const txResult = await transaction.executeWithSigner(signer);
       console.log(txResult);
+
       return txResult ? txResult.transactionId : null;
     } catch (err) {
       console.error("Error processing transaction bytes:", err);

@@ -14,8 +14,6 @@ import SendIcon from "@mui/icons-material/Send";
 import { useState } from "react";
 import axios from "axios";
 
-const TOKEN_ID = "0.0.4794920"; // Replace with the actual token ID
-
 type SnackbarState = {
   open: boolean;
   message: string;
@@ -58,11 +56,8 @@ export default function Home() {
       console.log(response);
 
       // Assuming the API returns the bytes in response.data.bytes
-      const transactionBytes = new Uint8Array(response.data.bytes);
+      const transactionBytes = new Uint8Array(response.data.bytes.data);
       console.log(transactionBytes);
-
-      // Associate the token if necessary
-      await walletInterface.associateToken(TokenId.fromString(TOKEN_ID));
 
       // Sign and execute the transaction
       const txId = await walletInterface.processTransactionBytes(
